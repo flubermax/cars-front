@@ -47,6 +47,10 @@ import MyInput from '@/components/UI/MyInput.vue'
 import { useUserStore } from '@/stores/user'
 // import { storeToRefs } from 'pinia'
 
+defineOptions({
+  name: 'LoginModal',
+})
+
 type Props = {
   showModal: boolean
 }
@@ -68,7 +72,7 @@ const showModal = computed(() => props.showModal)
 
 const userStore = useUserStore()
 // const { currentUser } = storeToRefs(userStore)
-const { loginHandler } = userStore
+const { loginUser } = userStore
 
 const userForm = ref<UserForm>({
   login: '',
@@ -90,9 +94,7 @@ const v$ = useVuelidate(rules, { userForm })
 
 async function auth() {
   v$.value.$touch()
-  const isAuth = loginHandler(userForm.value.login, userForm.value.password)
-  console.log('--- isAuth')
-  console.log(isAuth)
+  const isAuth = loginUser(userForm.value.login, userForm.value.password)
   await nextTick()
   if (isAuth) {
     closeModal()

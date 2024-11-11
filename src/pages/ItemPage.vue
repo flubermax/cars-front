@@ -15,8 +15,7 @@
               {{ item.author.name }}
             </div>
             <div class="user-info-place">
-              <!-- {{ item.author.place }} -->
-              Город в котором находится
+              {{ item.author.location }}
             </div>
           </div>
         </div>
@@ -25,18 +24,22 @@
             <q-icon name="chat" class="q-mr-xs" />
             Написать
           </div>
-          <q-btn class="action-number" color="secondary" icon="call" label="Показать номер" unelevated @click="showPhoneModal = true" />
+          <q-btn class="action-showNumber" color="secondary" icon="call" label="Показать номер" unelevated @click="showPhoneModal = true" />
         </div>
+      </div>
+      <div v-if="isAuth" class="row justify-end q-mt-md">
+        <q-btn v-if="isFavorite(item)" color="primary" icon="favorite" label="Убрать из избранного" outline no-caps @click="removeFromFav(item)" />
+        <q-btn v-else color="primary" icon="favorite_border" label="Добавить в избранное" outline no-caps @click="addToFav(item)" />
       </div>
       <div class="row justify-between q-py-lg">
         <div class="item-page-info">
           <div>
             <h4 class="q-mb-md">Характеристики</h4>
             <div class="q-mb-md"><span class="text-gray">Год выпуска:</span> {{ item.year }}</div>
-            <div class="q-mb-md"><span class="text-gray">Пробег:</span> {{ numberWithSpaces(item.mileage) }} км</div>
+            <div class="q-mb-md"><span class="text-gray">Пробег:</span> {{ item.mileage ? numberWithSpaces(item.mileage) : '0' }} км</div>
             <div class="q-mb-md"><span class="text-gray">Двигатель:</span> {{ getEngineInfo() }}</div>
-            <div class="q-mb-md"><span class="text-gray">Коробка:</span> {{ transmissions[item.transmission].name }}</div>
-            <div class="q-mb-md"><span class="text-gray">Привод:</span> {{ drives[item.drive].name }}</div>
+            <div class="q-mb-md"><span class="text-gray">Коробка:</span> {{ item.transmission?.name }}</div>
+            <div class="q-mb-md"><span class="text-gray">Привод:</span> {{ item.drive?.name }}</div>
             <div class="q-mb-md"><span class="text-gray">Руль:</span> {{ item.leftHandDrive ? 'Левый' : 'Правый' }}</div>
           </div>
 
@@ -62,7 +65,7 @@
           </div>
           <div v-if="item.images.length > 1" class="item-page-images">
             <div v-for="(image, i) in item.images" :key="i" @mouseenter="setActiveSlide(i)">
-              <img :src="`src/assets/img/cars/${image}`" :alt="item.brand" />
+              <img :src="`src/assets/img/cars/${image}`" :alt="item.brand ? item.brand : ''" />
             </div>
           </div>
         </div>
@@ -86,7 +89,7 @@
       </q-card>
       <div class="modal-slider-nav">
         <div v-for="(image, i) in item?.images" :key="i" :class="{ active: i + 1 == currentSlide }" @click="setActiveSlide(i)">
-          <img :src="`src/assets/img/cars/${image}`" :alt="item?.brand" />
+          <img :src="`src/assets/img/cars/${image}`" :alt="item.brand ? item.brand : ''" />
         </div>
         <!-- <q-carousel v-model="currentSlide" vertical>
           <q-carousel-slide v-for="(image, i) in item?.images" :key="i" :name="i + 1" :img-src="`src/assets/img/cars/${image}`" />
@@ -94,40 +97,37 @@
       </div>
     </div>
 
-    <q-dialog v-model="showPhoneModal">
-      <q-card class="modal-phone">
-        <q-card-section class="row q-pa-none">
-          <q-space />
-          <q-btn icon="close" flat round dense v-close-popup />
-        </q-card-section>
-        <q-card-section class="modal-phone-body">
-          <div class="text-gray q-mb-xs">Телефон для связи:</div>
-          <div>{{ item?.author.phone }}</div>
-        </q-card-section>
-      </q-card>
-    </q-dialog>
+    <PhoneModal v-model:showModal="showPhoneModal" :phone="item.author.phone" />
   </q-page>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { autoMock } from '@/mock'
 import { numberWithSpaces } from '@/utils/commons'
 import { computed } from 'vue'
 import { transmissions } from '@/constants/transmission'
-import { engines } from '@/constants/engine'
+import { engineTypes } from '@/constants/engine'
 import { drives } from '@/constants/drive'
 import { CarItem } from '@/types'
-// import { useRouter, useRoute } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { useCarsStore } from '@/stores/cars'
+import { storeToRefs } from 'pinia'
+import PhoneModal from '@/components/modals/PhoneModal.vue'
 
 defineOptions({
   name: 'ItemPage',
 })
 
-// const router = useRouter()
 const route = useRoute()
 const guid = route.params.id
+
+const userStore = useUserStore()
+const { addToFav, removeFromFav } = userStore
+const { favoritesCars, isAuth } = storeToRefs(userStore)
+
+const carsStore = useCarsStore()
+const { items } = storeToRefs(carsStore)
 
 const getDefaultItem = () =>
   <CarItem>{
@@ -135,21 +135,22 @@ const getDefaultItem = () =>
     brand: '',
     model: '',
     color: '',
-    engineType: 'gas',
+    engineType: engineTypes.gas,
     engineCapacity: 0,
-    drive: 'FWD',
+    drive: drives.FWD,
     enginePower: 0,
-    transmission: 'MT',
+    transmission: transmissions.MT,
     leftHandDrive: true,
     year: 2000,
     mileage: 0,
-    price: 0,
+    price: '',
     descr: '',
     guid: '',
     author: {
       name: '',
       avatar: '',
       phone: '',
+      location: '',
     },
   }
 let item = ref<CarItem>(getDefaultItem())
@@ -188,16 +189,24 @@ function leafSlideNext(): void {
 }
 
 function getEngineInfo(): string {
-  return `${item.value.engineCapacity.toFixed(1)} л / ${item.value.enginePower} л.с. / ${engines[item.value.engineType].name}`
+  return `${item.value.engineCapacity ? item.value.engineCapacity.toFixed(1) : '0'} л / ${item.value.enginePower} л.с. / ${
+    item.value.engineType ? item.value.engineType.name : ''
+  }`
 }
 
 onMounted(() => {
-  item.value = autoMock.find((el) => el.guid === guid) || getDefaultItem()
+  item.value = items.value.find((el) => el.guid === guid) || getDefaultItem()
 })
+
+function isFavorite(item: CarItem) {
+  return favoritesCars.value.map((car) => car.guid).includes(item.guid)
+}
 </script>
 
 <style lang="scss">
 @import '@/assets/scss/_vars';
+@import '@/assets/scss/_mixins';
+
 .item-page-title {
   font-size: 2.5rem;
   font-weight: 600;
@@ -233,11 +242,7 @@ onMounted(() => {
     border-radius: $main-border-raius;
     overflow: hidden;
     img {
-      object-fit: cover;
-      object-position: center;
-      height: 100%;
-      width: 100%;
-      vertical-align: top;
+      @include image_center;
     }
   }
 }
@@ -372,11 +377,7 @@ onMounted(() => {
       border-color: $color-blue;
     }
     img {
-      object-fit: cover;
-      object-position: center;
-      height: 100%;
-      width: 100%;
-      vertical-align: top;
+      @include image_center;
     }
   }
 }

@@ -7,13 +7,13 @@
           :options="brandList"
           :disable="false"
           label="Марка"
-          :changeAnyType="true"
+          selectedLabel="Любая"
           @update:model-value="emit(`resetModel`)"
         />
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.model" :options="modelList" class="q-my-sm" label="Модель" :changeAnyType="true" :disable="!filter.brand" />
+        <MySelect v-model="filter.model" :options="modelList" class="q-my-sm" label="Модель" selectedLabel="Любая" :disable="!filter.brand" />
       </div>
 
       <div class="q-mb-md">
@@ -25,7 +25,7 @@
       </div>
 
       <div class="q-mb-md">
-        <span class="form-control-label">Цена</span>
+        <span class="form-control-label">Цена, ₽</span>
         <div class="range-input">
           <MyInput v-model="filter.priceFrom" placeholder="от" />
           <MyInput v-model="filter.priceTo" placeholder="до" />
@@ -33,27 +33,29 @@
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.engineType" :options="engineList" label="Двигатель" />
+        <MySelect v-model="filter.engineType" :options="engineList" label="Двигатель" selectedLabel="Любой" />
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.transmission" :options="transmissionList" label="Коробка передач" :changeAnyType="true" />
+        <MySelect v-model="filter.transmission" :options="transmissionList" label="Коробка передач" selectedLabel="Любая" />
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.drive" :options="driveList" label="Привод" />
+        <MySelect v-model="filter.drive" :options="driveList" label="Привод" selectedLabel="Любой" />
       </div>
 
       <div class="q-mb-md">
-        <span class="form-control-label">Объём двигателя</span>
+        <span class="form-control-label">Объём двигателя, л</span>
         <div class="range-input">
-          <MyInput v-model="filter.engineСapacityFrom" mask="#.#" placeholder="от" />
-          <MyInput v-model="filter.engineСapacityTo" mask="#.#" placeholder="до" />
+          <!-- <MyInput v-model="filter.engineСapacityFrom" mask="#.#" reverse-fill-mask placeholder="от" />
+          <MyInput v-model="filter.engineСapacityTo" mask="#.#" reverse-fill-mask placeholder="до" /> -->
+          <MySelect v-model="filter.engineСapacityFrom" :options="engineСapacityListFrom" selectedLabel="от" />
+          <MySelect v-model="filter.engineСapacityTo" :options="engineСapacityListTo" selectedLabel="до" />
         </div>
       </div>
 
       <div class="q-mb-md">
-        <span class="form-control-label">Пробег</span>
+        <span class="form-control-label">Пробег, км</span>
         <div class="range-input">
           <MyInput v-model="filter.mileageFrom" mask="# ### ### ###" reverse-fill-mask placeholder="от" />
           <MyInput v-model="filter.mileageTo" mask="# ### ### ###" reverse-fill-mask placeholder="до" />
@@ -62,10 +64,16 @@
 
       <div class="row">
         <div class="col q-pr-xs">
-          <q-btn class="full-width q-mr-md" color="primary" label="Показать" @click="emit(`filterData`)" :disabled="!isDataFiltered" />
+          <q-btn
+            class="full-width q-mr-md"
+            color="primary"
+            label="Показать"
+            @click="emit(`filterData`)"
+            :disabled="!isFilterChanged && !isDataFiltered"
+          />
         </div>
         <div class="col q-pl-xs">
-          <q-btn class="full-width" label="Сбросить" @click="emit('resetFilter')" />
+          <q-btn class="full-width" label="Сбросить" :disabled="!isFilterChanged && !isDataFiltered" @click="resetFilter" />
         </div>
       </div>
     </div>
@@ -77,7 +85,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { Filter } from '@/types'
 import { MyInput, MySelect } from '@/components/UI'
 import { brands } from '@/constants/brands'
-import { engines } from '@/constants/engine'
+import { engineTypes, engineСapacityList } from '@/constants/engine'
 import { drives } from '@/constants/drive'
 import { transmissions } from '@/constants/transmission'
 import { ListItem } from '@/components/models'
@@ -90,11 +98,13 @@ defineOptions({
 type Props = {
   filter: Filter
   isDataFiltered: boolean
+  isFilterChanged: boolean
 }
 
 const props = defineProps<Props>()
 const filter = computed(() => props.filter)
 const isDataFiltered = computed(() => props.isDataFiltered)
+const isFilterChanged = computed(() => props.isFilterChanged)
 
 const emit = defineEmits<{
   (e: 'filterData'): void
@@ -119,10 +129,22 @@ function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
 // }
 
 const brandList: string[] = Object.keys(brands)
-const engineList: ListItem[] = Object.values(engines)
+let modelList = ref<string[]>([])
+const engineList: ListItem[] = Object.values(engineTypes)
 const transmissionList: ListItem[] = Object.values(transmissions)
 const driveList: ListItem[] = Object.values(drives)
-let modelList = ref<string[]>([])
+const engineСapacityListFrom = computed(() => {
+  if (filter.value.engineСapacityTo) {
+    return engineСapacityList.filter((item) => item <= Number(filter.value.engineСapacityTo))
+  }
+  return engineСapacityList
+})
+const engineСapacityListTo = computed(() => {
+  if (filter.value.engineСapacityFrom) {
+    return engineСapacityList.filter((item) => item >= Number(filter.value.engineСapacityFrom))
+  }
+  return engineСapacityList
+})
 
 watch(
   filter,
@@ -138,9 +160,16 @@ watch(
     if (newVal.priceTo) {
       newVal.priceTo = numberWithSpaces(newVal.priceTo)
     }
+    // if (newVal.engineСapacityFrom) {
+    //   console.log(newVal.engineСapacityFrom, String(newVal.engineСapacityFrom).length)
+    // }
   },
   { deep: true }
 )
+
+async function resetFilter() {
+  emit('resetFilter')
+}
 
 onMounted(() => {
   // console.log(brands[Audi])

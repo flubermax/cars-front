@@ -1,13 +1,18 @@
-export interface Todo {
-  id: number;
-  content: string;
-}
-
 export interface Meta {
-  totalCount: number;
+  totalCount: number
 }
 
 export type ListItem = {
-  type: string;
-  name: string;
-};
+  type: string
+  name: string
+}
+
+export type Attributes = {
+  [key: number]: number
+}
+
+export type ServerResult = {
+  success: boolean
+  type: string
+  message: string
+}

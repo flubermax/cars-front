@@ -3,11 +3,13 @@
   justify-content: center;
   align-items: center;
 }
+
 @mixin flex_between {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
+
 @mixin mask_options($width, $height, $color) {
   width: $width;
   height: $height;
@@ -15,6 +17,14 @@
   mask-repeat: no-repeat;
   mask-position: center;
 }
+
+@mixin absolute_center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 @mixin image_center {
   object-fit: cover;
   object-position: center;
@@ -22,6 +32,7 @@
   height: 100%;
   vertical-align: top;
 }
+
 @mixin transition {
-  transition: all .15s;
+  transition: all 0.15s;
 }

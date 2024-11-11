@@ -5,48 +5,52 @@
         <img src="@/assets/img/topnav-icon2.png" alt="logo" />
       </div>
       <div class="top-nav-panel">
-        <div class="nav-link" @click="$router.push('/favourites')">
-          <v-icon icon="mdi-cards-heart"></v-icon>
-        </div>
-        <div class="nav-link" @click="$router.push('/messenger')">
-          <v-icon icon="mdi-chat"></v-icon>
-        </div>
         <div v-if="currentUser" class="">
-          <div>
-            <div class="top-nav-user">
-              <div class="top-nav-letter">
-                {{ getFirstLetter(currentUser.name) }}
-              </div>
-              <div class="d-flex align-center">
-                {{ currentUser.name }}
-                <q-icon name="expand_more" />
-              </div>
+          <div class="row">
+            <div class="nav-link q-mr-lg" @click="$router.push('/favorites')">
+              <q-icon name="favorite" />
             </div>
+            <div class="nav-link q-mr-lg" @click="$router.push('/messenger')">
+              <q-icon name="chat_bubble" />
+            </div>
+            <div>
+              <div class="top-nav-user">
+                <div class="top-nav-letter">
+                  {{ getFirstLetter(currentUser.name) }}
+                </div>
+                <div class="d-flex align-center">
+                  {{ currentUser.name }}
+                  <q-icon name="expand_more" />
+                </div>
+              </div>
 
-            <q-menu auto-close>
-              <q-list>
-                <q-item clickable>
-                  <q-item-section>Избранное</q-item-section>
-                </q-item>
-                <q-item clickable>
-                  <q-item-section>Сообщения</q-item-section>
-                </q-item>
-                <q-separator />
-                <q-item clickable @click="logout">
-                  <q-item-section>Выйти</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
+              <q-menu auto-close>
+                <q-list>
+                  <q-item clickable @click="router.push({ path: `/favorites` })">
+                    <q-item-section>Избранное</q-item-section>
+                  </q-item>
+                  <q-item clickable>
+                    <q-item-section>Сообщения</q-item-section>
+                  </q-item>
+                  <q-separator />
+                  <q-item clickable @click="logoutUser">
+                    <q-item-section>Выйти</q-item-section>
+                  </q-item>
+                </q-list>
+              </q-menu>
+            </div>
           </div>
         </div>
         <div v-else class="nav-link" @click="showLoginModal = true">Вход / регистрация</div>
-        <q-btn color="primary" @click="$router.push('/additem')">Разместить объявление</q-btn>
+        <q-btn color="primary" @click="addItemHandler">Разместить объявление</q-btn>
       </div>
     </div>
 
     <LoginModal v-model:showModal="showLoginModal" @openRegisterModal="showRegisterModal = true" />
 
-    <RegisterModal v-model:showModal="showRegisterModal" />
+    <RegisterModal v-model:showModal="showRegisterModal" @openSuccessModal="showSuccessModal = true" />
+
+    <SuccessModal v-model:show-modal="showSuccessModal" message="Вы успешно зарегистрированы и авторизованы!" />
   </div>
 </template>
 
@@ -55,27 +59,37 @@ import { onMounted, ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import LoginModal from '../modals/LoginModal.vue'
-import RegisterModal from '../modals/RegisterModal.vue'
+import LoginModal from '@/components/modals/LoginModal.vue'
+import RegisterModal from '@/components/modals/RegisterModal.vue'
+import SuccessModal from '@/components/modals/SuccessModal.vue'
 
 defineOptions({
   name: 'AppHeader',
 })
 
 const userStore = useUserStore()
-const { currentUser } = storeToRefs(userStore)
-const { logout } = userStore
+const { currentUser, isAuth } = storeToRefs(userStore)
+const { loginUser, logoutUser } = userStore
 
 const router = useRouter()
 const showLoginModal = ref(false)
 const showRegisterModal = ref(false)
+const showSuccessModal = ref(false)
 
 function getFirstLetter(word: string) {
   return word.split('')[0]
 }
 
+function addItemHandler() {
+  isAuth.value ? router.push('/additem') : (showLoginModal.value = true)
+}
+
 onMounted(() => {
-  // console.log('userStore === ', currentUser?.age)
+  const user = localStorage.getItem('quasarCarsUser')
+  if (user) {
+    const parsedUser = JSON.parse(user)
+    loginUser(parsedUser.login, parsedUser.password)
+  }
 })
 </script>
 
@@ -153,6 +167,7 @@ onMounted(() => {
 .nav-link {
   display: flex;
   align-items: center;
+  font-size: 1.25rem;
   cursor: pointer;
   transition: all 0.15s ease;
   &:hover {

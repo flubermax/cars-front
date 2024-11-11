@@ -42,15 +42,7 @@ h4,
 h5,
 h6 {
   margin: 0;
-  // font-size: inherit;
 }
-
-// .main-container {
-//   display: flex;
-//   max-width: 1200px;
-//   padding: 10px 0;
-//   margin: 0 auto;
-// }
 
 .container {
   max-width: 1200px;
@@ -60,7 +52,6 @@ h6 {
 
 .form-control {
   width: 100%;
-  // width: 300px;
 
   &-label {
     display: block;
@@ -79,10 +70,18 @@ h6 {
   gap: 10px;
 }
 
+.flex-grow-1 {
+  flex-grow: 1;
+}
+
 .text-gray {
   color: $color-gray;
 }
 
 .text-danger {
   color: $color-red;
+}
+
+.bg-gray-dark {
+  background-color: $color-gray-dark;
 }

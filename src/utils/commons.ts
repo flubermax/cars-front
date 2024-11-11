@@ -1,6 +1,6 @@
 import { CarItem } from '@/types'
-import { engines } from '@/constants/engine'
-import { drives } from '@/constants/drive'
+// import { engines } from '@/constants/engine'
+// import { drives } from '@/constants/drive'
 // import { transmissions } from '@/constants/transmission'
 
 export function getMileage(value: number): string {
@@ -15,12 +15,16 @@ export function getMileage(value: number): string {
   return `${carMileage} км`
 }
 
+export function getItemName(item: CarItem) {
+  return `${item.brand} ${item.model}, ${item.year}`
+}
+
 export function getItemInfo(item: CarItem): string {
-  const carDrive = drives[item.drive].name.toLowerCase()
-  const carEngine = engines[item.engineType].name.toLowerCase()
-  return `${numberWithSpaces(item.mileage)} км, ${item.engineCapacity.toFixed(1)} ${item.transmission} (${
-    item.enginePower
-  } л.с.), ${carEngine}, ${carDrive} привод`
+  const carDrive = item.drive ? item.drive.name.toLowerCase() : ''
+  const carEngine = item.engineType ? item.engineType.name.toLowerCase() : ''
+  return `${item.mileage ? numberWithSpaces(item.mileage) : '0'} км, ${item.engineCapacity ? item.engineCapacity.toFixed(1) : '0'} ${
+    item.transmission?.name
+  } (${item.enginePower} л.с.), ${carEngine}, ${carDrive} привод`
 }
 
 export function numberWithSpaces(val: string | number) {
