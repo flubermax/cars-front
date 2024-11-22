@@ -3,7 +3,7 @@ import MainList from '@/pages/MainList.vue'
 import AddItemPage from '@/pages/AddItemPage.vue'
 import ItemPage from '@/pages/ItemPage.vue'
 import FavoritesPage from '@/pages/FavoritesPage.vue'
-// import Profile from '@/components/profile/Profile.vue'
+import ProfilePage from '@/pages/ProfilePage.vue'
 // import Messenger from '@/components/profile/Messenger.vue'
 // import Services from '@/components/services/Services.vue'
 
@@ -32,6 +32,11 @@ const routes: RouteRecordRaw[] = [
         path: '/favorites',
         name: 'FavoritesPage',
         component: FavoritesPage,
+      },
+      {
+        path: '/profile',
+        name: 'ProfilePage',
+        component: ProfilePage,
       },
     ],
   },

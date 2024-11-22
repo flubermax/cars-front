@@ -2,18 +2,7 @@ import { CarItem } from '@/types'
 import { defineStore, storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { useCarsStore } from '@/stores/cars'
-import { ServerResult } from '@/components/models'
-
-interface User {
-  login: string
-  password: string
-  name: string
-  age: number | null
-  location: string
-  avatar: string
-  phone: string
-  favorites: CarItem[]
-}
+import { ServerResult, User } from '@/components/models'
 
 type NewUser = {
   login: string
@@ -30,30 +19,27 @@ export const useUserStore = defineStore('userStore', () => {
       login: 'admin',
       password: 'qwe123',
       name: 'Max',
-      age: 32,
-      location: '',
+      location: 'Омск',
       avatar: '',
-      phone: '',
+      phone: '+7 (921) 121 21 21',
       favorites: [],
     },
     {
       login: 'lolka',
       password: '123',
       name: 'Egor',
-      age: 38,
-      location: '',
+      location: 'Москва',
       avatar: '',
-      phone: '',
+      phone: '+7 (950) 489 42 15',
       favorites: [...items.value],
     },
     {
       login: 'kek228',
       password: '123123',
       name: 'Valera',
-      age: 21,
-      location: '',
+      location: 'Мурманск',
       avatar: '',
-      phone: '',
+      phone: '+7 (911) 900 75 85',
       favorites: [],
     },
   ])
@@ -65,6 +51,23 @@ export const useUserStore = defineStore('userStore', () => {
   const loginUpperCase = computed(() => (currentUser.value ? currentUser.value.login.toUpperCase() : ''))
 
   const favoritesCars = computed(() => (currentUser.value ? currentUser.value.favorites : []))
+
+  function updateUserData(login: User['login'], user: User) {
+    const targetIndex = usersList.value.findIndex((item) => item.login === login)
+    if (targetIndex) {
+      usersList.value[targetIndex] = { ...user }
+      currentUser.value = { ...user }
+    }
+  }
+
+  function updateUserPassword(login: User['login'], newPassword: User['password']) {
+    const targetIndex = usersList.value.findIndex((item) => item.login === login)
+    if (targetIndex) {
+      const user = usersList.value[targetIndex]
+      usersList.value[targetIndex] = { ...user, password: newPassword }
+      currentUser.value = { ...user, password: newPassword }
+    }
+  }
 
   function loginUser(login: string, password: string): User | null {
     const user = usersList.value.find((item) => item.login === login)
@@ -106,7 +109,6 @@ export const useUserStore = defineStore('userStore', () => {
       login,
       password,
       name: '',
-      age: 18,
       location: '',
       avatar: '',
       phone: '',
@@ -132,5 +134,18 @@ export const useUserStore = defineStore('userStore', () => {
     }
   }
 
-  return { currentUser, loginUpperCase, registerUser, loginUser, logoutUser, isAuth, favoritesCars, addToFav, removeFromFav }
+  return {
+    usersList,
+    currentUser,
+    updateUserData,
+    updateUserPassword,
+    loginUpperCase,
+    registerUser,
+    loginUser,
+    logoutUser,
+    isAuth,
+    favoritesCars,
+    addToFav,
+    removeFromFav,
+  }
 })

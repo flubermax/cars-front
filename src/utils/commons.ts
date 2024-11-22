@@ -1,4 +1,6 @@
 import { CarItem } from '@/types'
+import assert from 'assert'
+// const assert = require('assert')
 // import { engines } from '@/constants/engine'
 // import { drives } from '@/constants/drive'
 // import { transmissions } from '@/constants/transmission'
@@ -30,4 +32,17 @@ export function getItemInfo(item: CarItem): string {
 export function numberWithSpaces(val: string | number) {
   const newVal = String(val).replace(/\s+/g, '')
   return newVal.replace(/\B(?=(\d{3})+(?!\d))/g, ' ')
+}
+
+export const deepEqualCheck = <T>(actual: T, expected: T) => {
+  let isEqual
+
+  try {
+    assert.deepStrictEqual(actual, expected)
+    isEqual = true
+  } catch (error) {
+    isEqual = false
+  }
+
+  return isEqual
 }

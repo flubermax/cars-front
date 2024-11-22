@@ -17,7 +17,6 @@
           :item="item"
           :itemIndex="itemIndex"
           :itemSlideValue="itemSlideValue"
-          class="item"
           @click="router.push({ path: `/auto/${item.guid}` })"
         />
       </div>
@@ -165,98 +164,10 @@ onMounted(() => {
 
 <style lang="scss">
 @import '@/assets/scss/_vars';
+@import '@/assets/scss/_mixins';
 .content {
   flex-grow: 1;
   padding: 10px 0 10px 20px;
-}
-
-.item {
-  display: flex;
-  border-radius: 10px;
-  transition: all 0.1s linear;
-  cursor: pointer;
-  padding: 10px;
-  margin-bottom: 10px;
-  &:hover {
-    background-color: rgba($color-gray, 0.15);
-  }
-
-  &-slider {
-    flex: 0 0 280px;
-    height: 180px;
-    border-radius: 10px;
-    margin-right: 10px;
-    position: relative;
-    &-nav {
-      display: flex;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      padding: 0 2px;
-      opacity: 0;
-      &-item {
-        display: flex;
-        align-items: end;
-        flex-grow: 1;
-        height: 100%;
-        padding: 4px 0;
-        margin: 0 2px;
-        &::before {
-          display: block;
-          content: '';
-          width: 100%;
-          height: 4px;
-          background-color: #c1c1c1;
-          border-radius: $main-border-raius;
-        }
-        &.active::before {
-          background-color: #3d87d2;
-        }
-      }
-    }
-    &-more {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-      font-weight: 600;
-      background-color: rgba(0, 0, 0, 0.35);
-    }
-    .q-carousel {
-      height: 100%;
-    }
-  }
-
-  &-name {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: $color-blue;
-  }
-
-  &-price {
-    font-size: 1.15rem;
-    font-weight: 600;
-  }
-
-  &-descr {
-    color: rgba($color-gray-dark, 0.7);
-    text-overflow: ellipsis;
-    -webkit-line-clamp: 3;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
-}
-
-.item-slider:hover .item-slider-nav {
-  opacity: 1;
 }
 
 .searchResult-empty {

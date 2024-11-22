@@ -2,6 +2,38 @@ import { CarItem } from '@/types'
 
 export const autoMock: CarItem[] = [
   {
+    images: [],
+    brand: 'Test',
+    model: 'Testov',
+    color: 'black',
+    engineType: {
+      type: 'gas',
+      name: 'Бензин',
+    },
+    engineCapacity: 1.5,
+    drive: {
+      type: 'FWD',
+      name: 'Передний',
+    },
+    enginePower: 110,
+    transmission: {
+      type: 'CVT',
+      name: 'Вариатор',
+    },
+    leftHandDrive: true,
+    year: 2012,
+    mileage: 67000,
+    price: '650000',
+    descr: '',
+    guid: '1e785cd8-d03a-42ee-b500-de028f3a6a6e',
+    author: {
+      name: 'xxx345345xx',
+      avatar: '',
+      phone: '8 (921) 222 00 32',
+      location: 'Мурманск',
+    },
+  },
+  {
     images: ['lancer.jpg'],
     brand: 'Mitsubishi',
     model: 'Lancer',

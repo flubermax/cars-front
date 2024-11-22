@@ -26,6 +26,9 @@
 
               <q-menu auto-close>
                 <q-list>
+                  <q-item clickable @click="router.push({ path: `/profile` })">
+                    <q-item-section>Профиль</q-item-section>
+                  </q-item>
                   <q-item clickable @click="router.push({ path: `/favorites` })">
                     <q-item-section>Избранное</q-item-section>
                   </q-item>

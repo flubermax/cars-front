@@ -313,7 +313,8 @@ const getNewItemDto = (): CarItem => {
 const showSuccessModal = ref(false)
 
 const formHandler = () => {
-  // v$.value.$touch()
+  v$.value.$touch()
+  if (v$.value.$errors.length) return
   addItem(getNewItemDto())
   showSuccessModal.value = true
 }

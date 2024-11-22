@@ -6,7 +6,7 @@
       <div v-else>
         <div v-for="item in carsData" :key="item.guid" class="favorites-item" @click="router.push({ path: `/auto/${item.guid}` })">
           <div class="favorites-item-image">
-            <img :src="`src/assets/img/cars/${item.images[0]}`" :alt="item.brand ? item.brand : ''" />
+            <img :src="`src/assets/img/${getFavItemImage(item)}`" :alt="item.brand ? item.brand : ''" />
           </div>
           <div class="favorites-item-body">
             <div class="favorites-item-name">
@@ -65,6 +65,14 @@ function openPhoneModal(item: CarItem) {
 
 function isFavorite(item: CarItem) {
   return favoritesCars.value.map((car) => car.guid).includes(item.guid)
+}
+
+function getFavItemImage(item: CarItem): string {
+  if (item.images.length) {
+    return `cars/${item.images[0]}`
+  } else {
+    return 'defaultcar.jpg'
+  }
 }
 
 onMounted(() => {

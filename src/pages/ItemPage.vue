@@ -45,12 +45,13 @@
 
           <div class="q-mt-lg">
             <h4 class="q-mb-md">Описание</h4>
-            <div class="item-page-descr">{{ item.descr }}</div>
+            <div v-if="item.descr.length" class="item-page-descr">{{ item.descr }}</div>
+            <div v-else class="text-gray">Описание отсутствует</div>
           </div>
         </div>
         <div class="item-page-content">
           <div class="item-page-slider">
-            <q-carousel v-model="currentSlide">
+            <q-carousel v-if="item.images.length" v-model="currentSlide">
               <q-carousel-slide
                 v-for="(image, i) in item.images"
                 :key="i"
@@ -62,6 +63,9 @@
                 @click="openSliderModal"
               />
             </q-carousel>
+            <div v-else class="default-car-image">
+              <img src="src/assets/img/defaultcar.jpg" alt="Default image" />
+            </div>
           </div>
           <div v-if="item.images.length > 1" class="item-page-images">
             <div v-for="(image, i) in item.images" :key="i" @mouseenter="setActiveSlide(i)">

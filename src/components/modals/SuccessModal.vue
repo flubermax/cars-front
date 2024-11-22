@@ -32,7 +32,7 @@ const emit = defineEmits<Emits>()
 
 const props = defineProps<Props>()
 const showModal = computed(() => props.showModal)
-const { message } = props
+const message = computed(() => props.message)
 
 function closeModal() {
   emit('update:showModal', false)
