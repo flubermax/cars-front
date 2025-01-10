@@ -33,15 +33,42 @@
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.engineType" :options="engineList" label="Двигатель" selectedLabel="Любой" />
+        <MySelect
+          v-model="filter.engineType"
+          :options="engineList"
+          option-value="type"
+          option-label="name"
+          emit-value
+          map-options
+          label="Двигатель"
+          selectedLabel="Любой"
+        />
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.transmission" :options="transmissionList" label="Коробка передач" selectedLabel="Любая" />
+        <MySelect
+          v-model="filter.transmission"
+          :options="transmissionList"
+          option-value="type"
+          option-label="name"
+          emit-value
+          map-options
+          label="Коробка передач"
+          selectedLabel="Любая"
+        />
       </div>
 
       <div class="q-mb-md">
-        <MySelect v-model="filter.drive" :options="driveList" label="Привод" selectedLabel="Любой" />
+        <MySelect
+          v-model="filter.drive"
+          :options="driveList"
+          option-value="type"
+          option-label="name"
+          emit-value
+          map-options
+          label="Привод"
+          selectedLabel="Любой"
+        />
       </div>
 
       <div class="q-mb-md">
@@ -68,7 +95,7 @@
             class="full-width q-mr-md"
             color="primary"
             label="Показать"
-            @click="emit(`filterData`)"
+            @click="emit(`fetchCars`)"
             :disabled="!isFilterChanged && !isDataFiltered"
           />
         </div>
@@ -85,10 +112,9 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { Filter } from '@/types'
 import { MyInput, MySelect } from '@/components/UI'
 import { brands } from '@/constants/brands'
-import { engineTypes, engineСapacityList } from '@/constants/engine'
-import { drives } from '@/constants/drive'
-import { transmissions } from '@/constants/transmission'
-import { ListItem } from '@/components/models'
+import { engineList, engineСapacityList } from '@/constants/engines'
+import { driveList } from '@/constants/drives'
+import { transmissionList } from '@/constants/transmissions'
 import { numberWithSpaces } from '@/utils/commons'
 
 defineOptions({
@@ -107,7 +133,7 @@ const isDataFiltered = computed(() => props.isDataFiltered)
 const isFilterChanged = computed(() => props.isFilterChanged)
 
 const emit = defineEmits<{
-  (e: 'filterData'): void
+  (e: 'fetchCars'): void
   (e: 'resetFilter'): void
   (e: 'resetModel'): void
 }>()
@@ -130,9 +156,6 @@ function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
 
 const brandList: string[] = Object.keys(brands)
 let modelList = ref<string[]>([])
-const engineList: ListItem[] = Object.values(engineTypes)
-const transmissionList: ListItem[] = Object.values(transmissions)
-const driveList: ListItem[] = Object.values(drives)
 const engineСapacityListFrom = computed(() => {
   if (filter.value.engineСapacityTo) {
     return engineСapacityList.filter((item) => item <= Number(filter.value.engineСapacityTo))

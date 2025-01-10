@@ -22,13 +22,18 @@
           <my-input
             v-model="userForm.password"
             :class="[v$.userForm.password.$errors.length > 0 || authError ? 'input--error' : '']"
+            :type="showPassword ? 'password' : 'text'"
             placeholder="Пароль"
             @input="authError = false"
-          ></my-input>
+          >
+            <template v-slot:append>
+              <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="showPassword = !showPassword" />
+            </template>
+          </my-input>
           <div v-if="v$.userForm.password.$errors.length" class="text-danger q-mt-xs">Введите пароль</div>
         </div>
 
-        <q-btn color="primary" :disable="!isFormFilled && authError" @click="auth">Войти</q-btn>
+        <q-btn color="primary" :disable="!isFormFilled && authError" @click="loginHandler">Войти</q-btn>
         <div v-if="authError && isFormFilled" class="text-danger q-mt-xs q-mb-md">Неверный логин или пароль</div>
       </q-card-section>
       <q-card-section class="modal-login-footer">
@@ -70,8 +75,9 @@ const emit = defineEmits<Emits>()
 const props = defineProps<Props>()
 const showModal = computed(() => props.showModal)
 
+const showPassword = ref(true)
+
 const userStore = useUserStore()
-// const { currentUser } = storeToRefs(userStore)
 const { loginUser } = userStore
 
 const userForm = ref<UserForm>({
@@ -92,14 +98,19 @@ const rules = {
 
 const v$ = useVuelidate(rules, { userForm })
 
-async function auth() {
+async function loginHandler() {
   v$.value.$touch()
-  const isAuth = loginUser(userForm.value.login, userForm.value.password)
-  await nextTick()
-  if (isAuth) {
-    closeModal()
-  } else {
-    authError.value = true
+  if (v$.value.userForm.$errors.length) return
+  try {
+    const logResult = await loginUser(userForm.value.login, userForm.value.password)
+    await nextTick()
+    if (logResult.success) {
+      closeModal()
+    } else {
+      authError.value = true
+    }
+  } catch (error) {
+    console.log(error)
   }
 }
 

@@ -12,21 +12,19 @@
       square
       outlined
     >
-      <template #selected="">
+      <!-- <template #selected="">
         <div :class="{ 'text-grey-6': !value }">
-          {{ getSelectedLabel(value) }}
+          {{ value ? modelValue : props.selectedLabel }}
         </div>
-      </template>
-      <template #option="option">
-        <q-item v-bind="option.itemProps">
-          <span>{{ getSelectedLabel(option.opt) }}</span>
-        </q-item>
-      </template>
+      </template> -->
       <template #no-option="">
         <q-item class="">
           <span class="q-pt-xs">Опции отсутствуют</span>
         </q-item>
       </template>
+      <div v-if="!value" class="my-select-placeholder text-grey-6">
+        {{ props.selectedLabel }}
+      </div>
     </q-select>
   </div>
 </template>
@@ -66,13 +64,22 @@ const value = computed({
   },
 })
 
-function getSelectedLabel(opt: Props['modelValue']) {
-  if (opt) {
-    return typeof opt === 'object' ? opt.name : opt
-  } else {
-    return props.selectedLabel
-  }
-}
+// const attrs = useAttrs()
+
+// function getSelectedLabel(opt: Props['modelValue']) {
+//   if (opt) {
+//     return typeof opt === 'object' && attrs['map-options'] !== 'undefined' ? opt.name : opt
+//   } else {
+//     return props.selectedLabel
+//   }
+// }
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+.my-select-placeholder {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+}
+</style>

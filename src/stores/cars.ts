@@ -1,18 +1,18 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
-import { CarItem } from '@/types'
-import { autoMock } from '@/mock'
+// import { ref } from 'vue'
+// import { CarItem } from '@/types'
+// import { autoMock } from '@/mock'
 
 export const useCarsStore = defineStore('carsStore', () => {
-  const items = ref<CarItem[]>([...autoMock])
+  // const items = ref<CarItem[]>([...autoMock])
 
-  const addItem = (newItem: CarItem): void => {
-    items.value.push(newItem)
-  }
-
-  // const removeItem = (guid: string): void => {
-  //   items.value = items.value.filter((item) => item.guid !== guid)
+  // function addItem(newItem: CarItem): void {
+  //   items.value.push(newItem)
   // }
 
-  return { items, addItem }
+  // const removeItem = (idf: string): void => {
+  //   items.value = items.value.filter((item) => item.idf !== idf)
+  // }
+
+  return {}
 })

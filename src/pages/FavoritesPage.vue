@@ -2,30 +2,33 @@
   <q-page>
     <div class="container">
       <h4 class="favorites-title">Избранное</h4>
-      <div class="searchResult-empty" v-if="carsData.length == 0">Нет избранных объявлений</div>
+      <div v-if="isLoading">Идёт загрузка...</div>
       <div v-else>
-        <div v-for="item in carsData" :key="item.guid" class="favorites-item" @click="router.push({ path: `/auto/${item.guid}` })">
-          <div class="favorites-item-image">
-            <img :src="`src/assets/img/${getFavItemImage(item)}`" :alt="item.brand ? item.brand : ''" />
-          </div>
-          <div class="favorites-item-body">
-            <div class="favorites-item-name">
-              {{ getItemName(item) }}
+        <div class="searchResult-empty" v-if="items.length == 0">Нет избранных объявлений</div>
+        <div v-else>
+          <div v-for="item in items" :key="item.idf" class="favorites-item" @click="router.push({ path: `/auto/${item.idf}` })">
+            <div class="favorites-item-image">
+              <img :src="getFavItemImage(item)" :alt="item.brand ? item.brand : ''" />
             </div>
-            <div class="favorites-item-price">{{ numberWithSpaces(item.price) }} ₽</div>
-            <div class="favorites-item-mileage">
-              {{ getItemInfo(item) }}
+            <div class="favorites-item-body">
+              <div class="favorites-item-name">
+                {{ getItemName(item) }}
+              </div>
+              <div class="favorites-item-price">{{ item.price ? numberWithSpaces(item.price) : 0 }} ₽</div>
+              <div class="favorites-item-mileage">
+                {{ getItemInfo(item) }}
+              </div>
+              <div class="favorites-item-descr">
+                {{ item.descr }}
+              </div>
             </div>
-            <div class="favorites-item-descr">
-              {{ item.descr }}
+            <div class="favorites-item-actions">
+              <div class="action-favBtn" @click.stop="addToFav(item)">
+                <q-icon v-if="isFavorite(item)" name="favorite" />
+                <q-icon v-else name="favorite_border" />
+              </div>
+              <q-btn class="action-showNumber" color="secondary" icon="call" label="Показать номер" unelevated @click.stop="openPhoneModal(item)" />
             </div>
-          </div>
-          <div class="favorites-item-actions">
-            <div class="action-favBtn">
-              <q-icon v-if="isFavorite(item)" name="favorite" @click.stop="removeFromFav(item)" />
-              <q-icon v-else name="favorite_border" @click.stop="addToFav(item)" />
-            </div>
-            <q-btn class="action-showNumber" color="secondary" icon="call" label="Показать номер" unelevated @click.stop="openPhoneModal(item)" />
           </div>
         </div>
       </div>
@@ -36,9 +39,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import Api from '@/utils/api'
+import { ref, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { getItemInfo, numberWithSpaces, getItemName } from '@/utils/commons'
+import { getItemInfo, getItemName, numberWithSpaces, getImgSrc } from '@/utils/commons'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import { CarItem } from '@/types'
@@ -51,47 +55,65 @@ defineOptions({
 const router = useRouter()
 
 const userStore = useUserStore()
-const { addToFav, removeFromFav } = userStore
+const { addToFav } = userStore
 const { favoritesCars } = storeToRefs(userStore)
 
-const carsData = ref<CarItem[]>([])
+const items = ref<CarItem[]>([])
 const showPhoneModal = ref(false)
 const openedPhone = ref('')
+const isLoading = ref(false)
 
 function openPhoneModal(item: CarItem) {
-  openedPhone.value = item.author.phone
+  openedPhone.value = item.authorPhone
   showPhoneModal.value = true
 }
 
 function isFavorite(item: CarItem) {
-  return favoritesCars.value.map((car) => car.guid).includes(item.guid)
+  return favoritesCars.value.includes(item.idf)
 }
 
 function getFavItemImage(item: CarItem): string {
   if (item.images.length) {
-    return `cars/${item.images[0]}`
+    return getImgSrc(item.images[0])
   } else {
     return 'defaultcar.jpg'
   }
 }
 
-onMounted(() => {
-  carsData.value = [...favoritesCars.value]
+async function fetchCars() {
+  try {
+    isLoading.value = true
+    const resp = await Api.post('car/favorites', { idfs: Array.from(favoritesCars.value) })
+    if (resp.success) {
+      items.value = [...resp.data]
+    } else {
+      // infoModal.value?.openModal(resp.message, 'error')
+    }
+  } catch (error) {
+    console.log(error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(async () => {
+  if (favoritesCars.value.length == 0) {
+    watch(
+      favoritesCars,
+      async () => {
+        fetchCars()
+      },
+      { once: true }
+    )
+  } else {
+    fetchCars()
+  }
 })
 </script>
 
 <style lang="scss">
 @import '@/assets/scss/_vars';
 @import '@/assets/scss/_mixins';
-
-.action-favBtn {
-  font-size: 1.25rem;
-  color: $color-red;
-  &:hover {
-    opacity: 0.7;
-  }
-}
-
 .favorites-title {
   padding-left: 8px;
   margin: 20px 0;

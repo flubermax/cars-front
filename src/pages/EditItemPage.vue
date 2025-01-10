@@ -1,13 +1,13 @@
 <template>
   <q-page>
     <div class="container container-small">
-      <h5 class="q-my-md">Новое объявление</h5>
+      <h5 class="q-my-md">Редактировать объявление</h5>
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.brand"
+          v-model="item.brand"
           :options="brandList"
           :disable="false"
-          :class="[v$.newItem.brand.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.brand.$errors.length > 0 ? 'input--error' : '']"
           label="Марка"
           :isRequired="true"
           selectedLabel="Не выбрана"
@@ -17,22 +17,22 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.model"
+          v-model="item.model"
           :options="modelList"
-          :class="[v$.newItem.model.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.model.$errors.length > 0 ? 'input--error' : '']"
           label="Модель"
           :isRequired="true"
           selectedLabel="Не выбрана"
-          :disable="!newItem.brand"
+          :disable="!item.brand"
         />
       </div>
 
       <div class="q-mb-md">
         <MyInput
-          v-model="newItem.year"
+          v-model="item.year"
           mask="####"
           label="Год выпуска"
-          :class="[v$.newItem.year.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.year.$errors.length > 0 ? 'input--error' : '']"
           placeholder="Год"
           :isRequired="true"
         />
@@ -40,9 +40,9 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.color"
+          v-model="item.color"
           :options="colorsList"
-          :class="[v$.newItem.color.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.color.$errors.length > 0 ? 'input--error' : '']"
           :isRequired="true"
           option-value="type"
           option-label="name"
@@ -55,9 +55,9 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.engineType"
+          v-model="item.engineType"
           :options="engineList"
-          :class="[v$.newItem.engineType.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.engineType.$errors.length > 0 ? 'input--error' : '']"
           label="Двигатель"
           option-value="type"
           option-label="name"
@@ -70,9 +70,9 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.engineCapacity"
+          v-model="item.engineCapacity"
           :options="engineСapacityList"
-          :class="[v$.newItem.engineCapacity.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.engineCapacity.$errors.length > 0 ? 'input--error' : '']"
           :isRequired="true"
           option-value="type"
           option-label="name"
@@ -85,10 +85,10 @@
 
       <div class="q-mb-md">
         <MyInput
-          v-model="newItem.enginePower"
+          v-model="item.enginePower"
           mask="####"
           label="Мощность, л.с."
-          :class="[v$.newItem.enginePower.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.enginePower.$errors.length > 0 ? 'input--error' : '']"
           placeholder="Не указан"
           :isRequired="true"
         />
@@ -96,9 +96,9 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.transmission"
+          v-model="item.transmission"
           :options="transmissionList"
-          :class="[v$.newItem.transmission.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.transmission.$errors.length > 0 ? 'input--error' : '']"
           label="Коробка передач"
           option-value="type"
           option-label="name"
@@ -111,9 +111,9 @@
 
       <div class="q-mb-md">
         <MySelect
-          v-model="newItem.drive"
+          v-model="item.drive"
           :options="driveList"
-          :class="[v$.newItem.drive.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.drive.$errors.length > 0 ? 'input--error' : '']"
           :isRequired="true"
           option-value="type"
           option-label="name"
@@ -126,11 +126,11 @@
 
       <div class="q-mb-md">
         <MyInput
-          v-model="newItem.mileage"
+          v-model="item.mileage"
           mask="# ### ### ###"
           reverse-fill-mask
           label="Пробег, км"
-          :class="[v$.newItem.mileage.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.mileage.$errors.length > 0 ? 'input--error' : '']"
           placeholder="Не указан"
           :isRequired="true"
         />
@@ -141,9 +141,13 @@
           <span class="form-control-label">Фотографии</span>
         </div>
         <div class="input-file-images">
-          <div v-for="(image, i) in imagesList" :key="i">
+          <div v-for="(image, i) in item.images" :key="i">
             <q-btn icon="close" size="10px" flat round dense @click="removeImage(image)" />
-            <img :src="getImagesPath(image)" :alt="newItem.brand ? newItem.brand : ''" />
+            <img :src="getImgSrc(image)" :alt="item.brand ? item.brand : ''" />
+          </div>
+          <div v-for="(image, i) in imagesList" :key="i">
+            <q-btn icon="close" size="10px" flat round dense @click="removeFile(image)" />
+            <img :src="getImagesPath(image)" :alt="item.brand ? item.brand : ''" />
           </div>
           <label class="input-file-btn">
             <q-icon name="photo_camera" />
@@ -165,11 +169,11 @@
 
       <div class="q-mb-md">
         <MyInput
-          v-model="newItem.price"
+          v-model="item.price"
           mask="# ### ### ###"
           reverse-fill-mask
           label="Цена, ₽"
-          :class="[v$.newItem.price.$errors.length > 0 ? 'input--error' : '']"
+          :class="[v$.item.price.$errors.length > 0 ? 'input--error' : '']"
           placeholder="Не указана"
           :isRequired="true"
         />
@@ -177,7 +181,7 @@
 
       <div class="q-mb-md">
         <MyInput
-          v-model="newItem.descr"
+          v-model="item.descr"
           label="Описание"
           placeholder="История обслуживания, недостатки и сильные стороны вашего автомобиля"
           type="textarea"
@@ -192,6 +196,7 @@
 
 <script setup lang="ts">
 import Api from '@/utils/api'
+import { useRoute } from 'vue-router'
 import { ref, watch, nextTick, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import MyInput from '@/components/UI/MyInput.vue'
@@ -203,20 +208,19 @@ import { engineList, engineСapacityList } from '@/constants/engines'
 import { driveList } from '@/constants/drives'
 import { transmissionList } from '@/constants/transmissions'
 import { ListItem } from '@/components/models'
-// import { numberWithSpaces } from '@/utils/commons'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import { useUserStore } from '@/stores/user'
-// import { useCarsStore } from '@/stores/cars'
-import { getImagesPath } from '@/utils/commons'
+// import { numberWithSpaces } from '@/utils/commons'
+import { getImagesPath, getImgSrc } from '@/utils/commons'
 import InfoModal from '@/components/modals/InfoModal.vue'
 
 defineOptions({
-  name: 'AddItemPage',
+  name: 'EditItemPage',
 })
 
-// const carsStore = useCarsStore()
-// const { addItem } = carsStore
+const route = useRoute()
+const idf = route.params.id
 
 const userStore = useUserStore()
 const { currentUser } = storeToRefs(userStore)
@@ -261,10 +265,10 @@ const getCarItemDefault = () =>
     authorPhone: '',
     authorLocation: '',
   }
-const newItem = ref<CarItem>(getCarItemDefault())
+const item = ref<CarItem>(getCarItemDefault())
 
 const rules = {
-  newItem: {
+  item: {
     brand: { required },
     model: { required },
     color: { required },
@@ -280,7 +284,7 @@ const rules = {
   },
 }
 
-const v$ = useVuelidate(rules, { newItem })
+const v$ = useVuelidate(rules, { item })
 
 function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
   return obj[key]
@@ -293,12 +297,15 @@ const inputFilesHanlder = (e: Event) => {
   if (val.files?.length) imagesList.value = [...imagesList.value, ...val.files]
 }
 
-const removeImage = (file: File) => {
+const removeFile = (file: File) => {
   imagesList.value = imagesList.value.filter((el) => el.name !== file.name)
+}
+const removeImage = (image: string) => {
+  item.value.images = item.value.images.filter((el) => el !== image)
 }
 
 const setModelList = (val: string | number | ListItem | null) => {
-  newItem.value.model = ''
+  item.value.model = ''
   if (val && typeof val === 'string') {
     modelList.value = getAttributeValue(brands, val)
   } else {
@@ -307,7 +314,7 @@ const setModelList = (val: string | number | ListItem | null) => {
 }
 
 watch(
-  newItem,
+  item,
   async (newVal: CarItem) => {
     if (newVal.brand) {
       modelList.value = getAttributeValue(brands, newVal.brand)
@@ -321,19 +328,21 @@ watch(
   { deep: true }
 )
 
-const getNewItemDto = () => {
-  const newCar = newItem.value
+const getItemDto = () => {
+  const updatedCar = item.value
+  console.log(item.value.images)
   const imagesFiles = <imgInObj>{}
   imagesList.value.forEach((file, index) => {
     imagesFiles[`carImage${index}`] = file
   })
 
   return {
-    ...newCar,
-    price: newCar.price ? +String(newCar.price).replace(/\s+/g, '') : '',
-    mileage: newCar.mileage ? +String(newCar.mileage).replace(/\s+/g, '') : '',
-    engineCapacity: String(newCar.engineCapacity),
-    enginePower: String(newCar.enginePower),
+    ...updatedCar,
+    images: JSON.stringify(updatedCar.images),
+    price: updatedCar.price ? +String(updatedCar.price).replace(/\s+/g, '') : '',
+    mileage: updatedCar.mileage ? +String(updatedCar.mileage).replace(/\s+/g, '') : '',
+    engineCapacity: String(updatedCar.engineCapacity),
+    enginePower: String(updatedCar.enginePower),
     authorIdf: currentUser.value ? currentUser.value.idf : '',
     authorName: currentUser.value ? currentUser.value.name : 'DefaultUser',
     authorAvatar: currentUser.value ? currentUser.value.avatar : '',
@@ -343,16 +352,31 @@ const getNewItemDto = () => {
   }
 }
 
+async function fetchCar() {
+  try {
+    const resp = await Api.get(`car/${idf}`)
+    if (resp.success) {
+      item.value = { ...resp.data }
+      // imagesList.value.push(file)
+    } else {
+      // infoModal.value?.openModal(resp.message, 'error')
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 async function formHandler() {
   v$.value.$touch()
   if (v$.value.$errors.length) return
   try {
-    const resp = await Api.post('car/add', getNewItemDto(), {
+    const resp = await Api.post('car/update', getItemDto(), {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     })
     if (resp.success) {
+      item.value = { ...resp.data }
       resetForm()
       infoModal.value?.openModal(resp.message, 'success')
     } else {
@@ -363,17 +387,27 @@ async function formHandler() {
   }
 }
 
+// const binary = atob(resp.data.images.split(',')[1])
+// const array = []
+// for (let i = 0; i < binary.length; i++) {
+//   array.push(binary.charCodeAt(i))
+// }
+// const file = new Blob([new Uint8Array(array)], { type: 'image/jpeg' })
+// console.log('--------file ')
+// console.log(file)
+
 async function resetForm() {
-  newItem.value = { ...getCarItemDefault() }
+  inputFileModel.value = []
   imagesList.value = []
   v$.value.$reset()
   await nextTick()
   isFormEdited.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
+  await fetchCar()
   watch(
-    [newItem],
+    [item],
     async () => {
       v$.value.$reset()
       isFormEdited.value = true
