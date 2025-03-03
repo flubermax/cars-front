@@ -3,43 +3,49 @@
     <div v-if="item" class="container">
       <div class="row justify-between q-py-md">
         <h4 class="item-page-title">{{ itemTitle }}</h4>
-        <span class="item-page-title">{{ numberWithSpaces(item.price) }} ₽</span>
+        <span class="item-page-title">{{ item.price ? numberWithSpaces(item.price) : 0 }} ₽</span>
       </div>
       <div class="row justify-between item-page-top q-py-md">
         <div class="item-page-user">
           <div class="user-avatar">
-            <img :src="item.author.avatar" alt="" />
+            <img :src="getImgSrc(item.authorAvatar)" alt="" />
           </div>
           <div class="user-info">
             <div class="user-info-name">
-              {{ item.author.name }}
+              {{ item.authorName }}
             </div>
             <div class="user-info-place">
-              {{ item.author.location }}
+              {{ item.authorLocation }}
             </div>
           </div>
         </div>
         <div class="item-page-actions">
-          <div class="action-message q-mr-md">
+          <div v-if="isAuth" class="action-message q-mr-md">
             <q-icon name="chat" class="q-mr-xs" />
             Написать
           </div>
-          <q-btn class="action-showNumber" color="secondary" icon="call" label="Показать номер" unelevated @click="showPhoneModal = true" />
+          <q-btn class="action-showNumber" color="secondary" icon="call" label="Показать номер" no-caps unelevated @click="showPhoneModal = true" />
         </div>
       </div>
-      <div v-if="isAuth" class="row justify-end q-mt-md">
-        <q-btn v-if="isFavorite(item)" color="primary" icon="favorite" label="Убрать из избранного" outline no-caps @click="removeFromFav(item)" />
-        <q-btn v-else color="primary" icon="favorite_border" label="Добавить в избранное" outline no-caps @click="addToFav(item)" />
+      <div v-if="isAuth" :class="['row', 'q-mt-md', showActionsBlock ? 'justify-between' : 'justify-end']">
+        <div v-if="showActionsBlock" class="actions-block">
+          <q-btn class="q-mr-md" color="secondary" label="Редактировать" outline no-caps @click="router.push({ path: `/edititem/${item.idf}` })" />
+          <q-btn color="red" label="Удалить" outline no-caps @click="deleteItem" />
+        </div>
+        <div v-else>
+          <q-btn v-if="isFavorite(item)" color="primary" icon="favorite" label="Убрать из избранного" outline no-caps @click="addToFav(item)" />
+          <q-btn v-else color="primary" icon="favorite_border" label="Добавить в избранное" outline no-caps @click="addToFav(item)" />
+        </div>
       </div>
-      <div class="row justify-between q-py-lg">
+      <div class="row justify-between q-pt-md q-pb-lg">
         <div class="item-page-info">
           <div>
             <h4 class="q-mb-md">Характеристики</h4>
             <div class="q-mb-md"><span class="text-gray">Год выпуска:</span> {{ item.year }}</div>
             <div class="q-mb-md"><span class="text-gray">Пробег:</span> {{ item.mileage ? numberWithSpaces(item.mileage) : '0' }} км</div>
             <div class="q-mb-md"><span class="text-gray">Двигатель:</span> {{ getEngineInfo() }}</div>
-            <div class="q-mb-md"><span class="text-gray">Коробка:</span> {{ item.transmission?.name }}</div>
-            <div class="q-mb-md"><span class="text-gray">Привод:</span> {{ item.drive?.name }}</div>
+            <div class="q-mb-md"><span class="text-gray">Коробка:</span> {{ getTransmission() }}</div>
+            <div class="q-mb-md"><span class="text-gray">Привод:</span> {{ getDrive() }}</div>
             <div class="q-mb-md"><span class="text-gray">Руль:</span> {{ item.leftHandDrive ? 'Левый' : 'Правый' }}</div>
           </div>
 
@@ -59,7 +65,7 @@
                 transition-prev="slide-right"
                 transition-next="slide-left"
                 animated
-                :img-src="`src/assets/img/cars/${image}`"
+                :img-src="getImgSrc(image)"
                 @click="openSliderModal"
               />
             </q-carousel>
@@ -69,7 +75,7 @@
           </div>
           <div v-if="item.images.length > 1" class="item-page-images">
             <div v-for="(image, i) in item.images" :key="i" @mouseenter="setActiveSlide(i)">
-              <img :src="`src/assets/img/cars/${image}`" :alt="item.brand ? item.brand : ''" />
+              <img :src="getImgSrc(image)" :alt="item.brand ? item.brand : ''" />
             </div>
           </div>
         </div>
@@ -82,7 +88,7 @@
       <q-card class="modal-slider-body">
         <q-icon name="close" class="modal-slider-close" @click="closeSliderModal" />
         <q-carousel v-model="currentSlide">
-          <q-carousel-slide v-for="(image, i) in item?.images" :key="i" :name="i + 1" :img-src="`src/assets/img/cars/${image}`" />
+          <q-carousel-slide v-for="(image, i) in item?.images" :key="i" :name="i + 1" :img-src="getImgSrc(image)" />
         </q-carousel>
         <div v-if="item.images.length > 1" class="modal-slider-btn modal-slider-btn--prev" @click="leafSlidePrev">
           <q-icon name="chevron_left" />
@@ -93,45 +99,50 @@
       </q-card>
       <div class="modal-slider-nav">
         <div v-for="(image, i) in item?.images" :key="i" :class="{ active: i + 1 == currentSlide }" @click="setActiveSlide(i)">
-          <img :src="`src/assets/img/cars/${image}`" :alt="item.brand ? item.brand : ''" />
+          <img :src="getImgSrc(image)" :alt="item.brand ? item.brand : ''" />
         </div>
         <!-- <q-carousel v-model="currentSlide" vertical>
           <q-carousel-slide v-for="(image, i) in item?.images" :key="i" :name="i + 1" :img-src="`src/assets/img/cars/${image}`" />
         </q-carousel> -->
       </div>
     </div>
-
-    <PhoneModal v-model:showModal="showPhoneModal" :phone="item.author.phone" />
+    <!-- сделать метод для get number автора -->
+    <PhoneModal v-model:showModal="showPhoneModal" :phone="item.authorPhone" />
+    <InfoModal ref="infoModal" />
   </q-page>
 </template>
 
 <script setup lang="ts">
+import Api from '@/utils/api'
 import { ref, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
-import { numberWithSpaces } from '@/utils/commons'
+import { useRoute, useRouter } from 'vue-router'
+import { Dialog } from 'quasar'
+import { numberWithSpaces, getImgSrc } from '@/utils/commons'
 import { computed } from 'vue'
-import { transmissions } from '@/constants/transmission'
-import { engineTypes } from '@/constants/engine'
-import { drives } from '@/constants/drive'
+import { transmissionList } from '@/constants/transmissions'
+import { engineList } from '@/constants/engines'
+import { driveList } from '@/constants/drives'
 import { CarItem } from '@/types'
 import { useUserStore } from '@/stores/user'
-import { useCarsStore } from '@/stores/cars'
 import { storeToRefs } from 'pinia'
 import PhoneModal from '@/components/modals/PhoneModal.vue'
+import ConfirmModal from '@/components/modals/ConfirmModal.vue'
+import SuccessModal from '@/components/modals/SuccessModal.vue'
+import InfoModal from '@/components/modals/InfoModal.vue'
 
 defineOptions({
   name: 'ItemPage',
 })
 
+const router = useRouter()
 const route = useRoute()
-const guid = route.params.id
+const idf = route.params.id
 
 const userStore = useUserStore()
-const { addToFav, removeFromFav } = userStore
-const { favoritesCars, isAuth } = storeToRefs(userStore)
+const { addToFav } = userStore
+const { favoritesCars, isAuth, currentUser } = storeToRefs(userStore)
 
-const carsStore = useCarsStore()
-const { items } = storeToRefs(carsStore)
+const infoModal = ref()
 
 const getDefaultItem = () =>
   <CarItem>{
@@ -139,25 +150,32 @@ const getDefaultItem = () =>
     brand: '',
     model: '',
     color: '',
-    engineType: engineTypes.gas,
+    engineType: null,
     engineCapacity: 0,
-    drive: drives.FWD,
+    drive: null,
     enginePower: 0,
-    transmission: transmissions.MT,
+    transmission: null,
     leftHandDrive: true,
     year: 2000,
     mileage: 0,
-    price: '',
+    price: null,
     descr: '',
-    guid: '',
-    author: {
-      name: '',
-      avatar: '',
-      phone: '',
-      location: '',
-    },
+    idf: '',
+    authorIdf: '',
+    authorName: '',
+    authorAvatar: '',
+    authorPhone: '',
+    authorLocation: '',
   }
 let item = ref<CarItem>(getDefaultItem())
+
+// const getDefaultAuthor = () =>
+//   <Author>{
+//     name: '',
+//     avatar: '',
+//     phone: '',
+//     location: '',
+//   }
 
 const currentSlide = ref<number>(1)
 const showSliderModal = ref<boolean>(false)
@@ -167,6 +185,8 @@ const imagesCount = computed(() => item.value.images.length)
 const itemTitle = computed(() => {
   return `${item.value.brand} ${item.value.model}, ${item.value.year}`
 })
+
+const showActionsBlock = computed(() => item.value.authorIdf === currentUser.value?.idf)
 
 function setActiveSlide(imgIndex: number): void {
   currentSlide.value = imgIndex + 1
@@ -193,18 +213,76 @@ function leafSlideNext(): void {
 }
 
 function getEngineInfo(): string {
+  const engType = engineList.find((el) => el.type === item.value.engineType)
   return `${item.value.engineCapacity ? item.value.engineCapacity.toFixed(1) : '0'} л / ${item.value.enginePower} л.с. / ${
-    item.value.engineType ? item.value.engineType.name : ''
+    engType ? engType.name : ''
   }`
+  // item.value.engineType.name
 }
 
-onMounted(() => {
-  item.value = items.value.find((el) => el.guid === guid) || getDefaultItem()
-})
+function getTransmission() {
+  const val = transmissionList.find((el) => el.type === item.value.transmission)
+  return val ? val.name : ''
+}
+
+function getDrive() {
+  const val = driveList.find((el) => el.type === item.value.drive)
+  return val ? val.name : ''
+}
+
+async function fetchCar() {
+  try {
+    const resp = await Api.get(`car/${idf}`)
+    if (resp.success) {
+      item.value = { ...resp.data }
+    } else {
+      // infoModal.value?.openModal(resp.message, 'error')
+    }
+  } catch (error) {
+    console.log(error)
+  }
+}
 
 function isFavorite(item: CarItem) {
-  return favoritesCars.value.map((car) => car.guid).includes(item.guid)
+  return favoritesCars.value.includes(item.idf)
 }
+
+async function deleteItem() {
+  Dialog.create({
+    component: ConfirmModal,
+    componentProps: {
+      message: 'Вы уверены, что хотите удалить объявление?',
+      okText: 'Удалить',
+      cancelText: 'Отмена',
+      cancel: true,
+      persistent: true,
+    },
+  }).onOk(async () => {
+    try {
+      const resp = await Api.get(`car/delete/${item.value.idf}`)
+      if (resp.success) {
+        Dialog.create({
+          component: SuccessModal,
+          componentProps: {
+            message: resp?.message + '. Вы будете перенаправлены на предыдущую страницу',
+            style: 'success',
+          },
+        }).onOk(async () => {
+          router.go(-1)
+        })
+      } else {
+        infoModal.value?.openModal(resp.message, 'error')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  })
+}
+
+onMounted(async () => {
+  console.log(idf)
+  await fetchCar()
+})
 </script>
 
 <style lang="scss">
@@ -404,6 +482,10 @@ function isFavorite(item: CarItem) {
   border-radius: 50%;
   background-color: red;
   margin: 0 15px 0 0;
+  overflow: hidden;
+  img {
+    @include image_center;
+  }
 }
 
 .item-page-actions {
@@ -429,11 +511,10 @@ body.no-scroll {
   padding-right: 15px;
 }
 
-.modal-phone {
-  width: 350px;
-  padding: 1rem 2rem 2rem;
-  &-body {
-    font-size: 1.1rem;
-  }
+.actions-block {
+  width: 100%;
+  background-color: $color-gray-light;
+  border-radius: 4px;
+  padding: 10px 15px;
 }
 </style>

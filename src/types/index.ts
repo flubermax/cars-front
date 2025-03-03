@@ -5,5 +5,6 @@ import { EngineType } from './EngineType'
 import { DriveType } from './DriveType'
 import { TransmissionType } from './TransmissionType'
 import { CarProp } from './CarProp'
+import { Role } from './Role'
 
-export type { CarItem, Filter, Author, EngineType, DriveType, TransmissionType, CarProp }
+export type { CarItem, Filter, Author, EngineType, DriveType, TransmissionType, CarProp, Role }

@@ -1,6 +1,6 @@
 <template>
-  <div class="item">
-    <div class="item-slider" @mouseleave="resetSlider(itemIndex)">
+  <div :class="['main-item', mainMode ? 'main-item--hover' : 'main-item--static']" class="main-item">
+    <div class="main-item-slider" @mouseleave="resetSlider(itemIndex)">
       <q-carousel v-if="item.images.length" v-model="itemSlideValue[itemIndex]">
         <q-carousel-slide
           v-for="(image, i) in item.images"
@@ -9,16 +9,16 @@
           transition-prev="slide-right"
           transition-next="slide-left"
           animated
-          :img-src="`src/assets/img/cars/${image}`"
+          :img-src="getImgSrc(image)"
         />
       </q-carousel>
       <div v-else class="default-car-image">
         <img src="src/assets/img/defaultcar.jpg" alt="Default image" />
       </div>
-      <div v-if="showRemainsInfo(item.images, itemIndex)" class="item-slider-more">Ещё {{ getRemainsSlidersCount(item.images) }} фото</div>
-      <div class="item-slider-nav" v-if="item.images.length > 1">
+      <div v-if="showRemainsInfo(item.images, itemIndex)" class="main-item-slider-more">Ещё {{ getRemainsSlidersCount(item.images) }} фото</div>
+      <div class="main-item-slider-nav" v-if="item.images.length > 1">
         <div
-          :class="['item-slider-nav-item', isSliderItemActive(imgIndex, itemIndex)]"
+          :class="['main-item-slider-nav-item', isSliderItemActive(imgIndex, itemIndex)]"
           v-for="(navItem, imgIndex) in getSliderNav(item.images)"
           :key="imgIndex"
           @mouseover="setActiveSlide(imgIndex, itemIndex)"
@@ -28,20 +28,35 @@
     </div>
     <div class="flex-grow-1">
       <div class="row justify-between items-center">
-        <div class="item-name">
+        <div class="main-item-name">
           {{ getItemName(item) }}
         </div>
-        <div v-if="isAuth" class="action-favBtn">
-          <q-icon v-if="isFavorite(item)" name="favorite" @click.stop="removeFromFav(item)" />
-          <q-icon v-else name="favorite_border" @click.stop="addToFav(item)" />
+        <div v-if="isAuth && mainMode" class="action-favBtn" @click.stop="addToFav(item)">
+          <q-icon v-if="isFavorite(item)" name="favorite" />
+          <q-icon v-else name="favorite_border" />
+        </div>
+        <div v-if="isAuth && !mainMode" class="action-menuBtn" @click.stop>
+          <q-btn color="primary" label="...">
+            <q-menu transition-show="jump-down" transition-hide="jump-up">
+              <q-list style="min-width: 100px">
+                <q-item clickable @click="router.push({ path: `/edititem/${item.idf}` })">
+                  <q-item-section>Редактировать</q-item-section>
+                </q-item>
+                <q-separator />
+                <q-item clickable @click="emit('deleteItem', item.idf)">
+                  <q-item-section>Удалить</q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
         </div>
       </div>
 
-      <div class="item-price">{{ numberWithSpaces(item.price) }} ₽</div>
-      <div class="item-mileage">
+      <div class="main-item-price">{{ item.price ? numberWithSpaces(item.price) : 0 }} ₽</div>
+      <div class="main-item-mileage">
         {{ getItemInfo(item) }}
       </div>
-      <div class="item-descr">
+      <div class="main-item-descr">
         {{ item.descr }}
       </div>
     </div>
@@ -49,29 +64,37 @@
 </template>
 
 <script setup lang="ts">
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
-import { getItemInfo, numberWithSpaces, getItemName } from '@/utils/commons'
+import { getItemInfo, getItemName, numberWithSpaces, getImgSrc } from '@/utils/commons'
 import { CarItem } from '@/types'
 import { useUserStore } from '@/stores/user'
-import { Attributes } from '@/components/models'
+import { SlideAttributes } from '@/components/models'
 
 defineOptions({
-  name: 'MainListItem',
+  name: 'MainPageItem',
 })
+
+type Emits = {
+  (event: 'deleteItem', idf: string): void
+}
+
+const emit = defineEmits<Emits>()
 
 type Props = {
   item: CarItem
   itemIndex: number
-  itemSlideValue: Attributes
+  itemSlideValue: SlideAttributes
+  mainMode: boolean
 }
 
 const props = defineProps<Props>()
 const { item, itemIndex, itemSlideValue } = props
 
+const router = useRouter()
 const userStore = useUserStore()
-const { addToFav, removeFromFav } = userStore
+const { addToFav } = userStore
 const { favoritesCars, isAuth } = storeToRefs(userStore)
-
 const sliderItemsCount = 5
 
 function getRemainsSlidersCount(images: string[]) {
@@ -100,7 +123,7 @@ function showRemainsInfo(images: string[], itemIndex: number): boolean {
 }
 
 function isFavorite(item: CarItem) {
-  return favoritesCars.value.map((car) => car.guid).includes(item.guid)
+  return favoritesCars.value.includes(item.idf)
 }
 </script>
 
@@ -108,15 +131,18 @@ function isFavorite(item: CarItem) {
 @import '@/assets/scss/_vars';
 @import '@/assets/scss/_mixins';
 
-.item {
+.main-item {
   display: flex;
   border-radius: 10px;
   transition: all 0.1s linear;
   cursor: pointer;
   padding: 10px;
   margin-bottom: 10px;
-  &:hover {
+  &.main-item--hover:hover {
     background-color: rgba($color-gray, 0.15);
+  }
+  &.main-item--static {
+    background-color: rgba($color-gray, 0.1);
   }
 
   &-slider {
@@ -176,6 +202,9 @@ function isFavorite(item: CarItem) {
     font-size: 1.25rem;
     font-weight: 600;
     color: $color-blue;
+    &:hover {
+      color: $color-blue-dark;
+    }
   }
 
   &-price {
@@ -193,7 +222,7 @@ function isFavorite(item: CarItem) {
   }
 }
 
-.item-slider:hover .item-slider-nav {
+.main-item-slider:hover .main-item-slider-nav {
   opacity: 1;
 }
 </style>

@@ -1,51 +1,68 @@
 <template>
-  <q-dialog v-model="showModal">
-    <q-card class="modal-success">
-      <q-card-section class="modal-login-body">
-        <div class="modal-success-message">
+  <q-dialog ref="dialogRef" persistent @hide="onDialogHide">
+    <q-card class="modal-info">
+      <q-card-section class="modal-info-body">
+        <div class="modal-info-icon q-my-xs">
+          <q-icon :name="modalType.icon" class="" size="45px" :color="modalType.color" />
+        </div>
+        <div class="modal-info-message">
           {{ message }}
         </div>
-        <q-btn color="primary" @click="closeModal">ОК</q-btn>
+        <q-btn color="primary" @click="onDialogOK">ОК</q-btn>
       </q-card-section>
     </q-card>
   </q-dialog>
 </template>
 
 <script setup lang="ts">
+import { useDialogPluginComponent } from 'quasar'
 import { computed } from 'vue'
-// import { storeToRefs } from 'pinia'
 
 defineOptions({
   name: 'SuccessModal',
 })
+defineEmits([...useDialogPluginComponent.emits])
+const { dialogRef, onDialogHide, onDialogOK } = useDialogPluginComponent()
 
+type modalStyle = 'info' | 'error' | 'success'
 type Props = {
-  showModal: boolean
+  style: modalStyle
   message: string
 }
-
-type Emits = {
-  (event: 'update:showModal', value: Props['showModal']): void
-}
-
-const emit = defineEmits<Emits>()
-
 const props = defineProps<Props>()
-const showModal = computed(() => props.showModal)
-const message = computed(() => props.message)
+const { message, style } = props
 
-function closeModal() {
-  emit('update:showModal', false)
+const types = {
+  success: {
+    icon: 'check_circle',
+    color: 'green',
+  },
+  error: {
+    icon: 'error_outline',
+    color: 'red',
+  },
+  info: {
+    icon: 'warning',
+    color: 'amber',
+  },
 }
+const modalType = computed(() => types[style])
 </script>
 
 <style lang="scss">
 @import '@/assets/scss/_vars';
 
-.modal-success {
+.modal-info {
+  width: 500px;
+  padding: 0;
+  &-body {
+    text-align: center;
+    padding: 1.35rem 1.5rem 1.45rem;
+  }
   &-message {
-    font-size: 1.25rem;
-    padding: 1rem 0 1.25rem;
+    font-size: 1.1rem;
+    line-height: 1.45rem;
+    padding: 0.85rem 0 1.35rem;
   }
 }
 </style>

@@ -1,6 +1,20 @@
 @import '_vars';
 @import '_mixins';
 
+#q-app {
+  height: 100vh;
+  .q-layout {
+    height: 100%;
+  }
+  .q-page-container {
+    max-height: 100%;
+    overflow: auto;
+  }
+  .q-page {
+    min-height: 0 !important;
+  }
+}
+
 .input-file-btn {
   display: flex;
   justify-content: center;
@@ -26,5 +40,13 @@
   overflow: hidden;
   img {
     @include image_center;
+  }
+}
+
+.action-favBtn {
+  font-size: 1.25rem;
+  color: $color-red;
+  &:hover {
+    opacity: 0.7;
   }
 }

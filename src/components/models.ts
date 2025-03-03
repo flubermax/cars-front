@@ -1,4 +1,4 @@
-import { CarItem } from '@/types'
+import { Role } from '@/types'
 export type Meta = {
   totalCount: number
 }
@@ -8,22 +8,25 @@ export type ListItem = {
   name: string
 }
 
-export type Attributes = {
+export type SlideAttributes = {
   [key: number]: number
 }
 
 export type ServerResult = {
   success: boolean
-  type: string
   message: string
+  token?: string
+  data?: unknown
 }
 
 export type User = {
+  idf: string
   login: string
   password: string
   name: string
   location: string
   avatar: string
   phone: string
-  favorites: CarItem[]
+  favorites: string[]
+  roles: Role[]
 }

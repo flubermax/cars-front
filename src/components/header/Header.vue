@@ -15,11 +15,12 @@
             </div>
             <div>
               <div class="top-nav-user">
-                <div class="top-nav-letter">
-                  {{ getFirstLetter(currentUser.name) }}
+                <div class="top-nav-avatar">
+                  <img v-if="currentUser.avatar" :src="getImgSrc(currentUser.avatar)" alt="avatar" />
+                  <span v-else>{{ getFirstLetter(currentUser) }}</span>
                 </div>
                 <div class="d-flex align-center">
-                  {{ currentUser.name }}
+                  {{ getUserName() }}
                   <q-icon name="expand_more" />
                 </div>
               </div>
@@ -29,6 +30,9 @@
                   <q-item clickable @click="router.push({ path: `/profile` })">
                     <q-item-section>Профиль</q-item-section>
                   </q-item>
+                  <q-item clickable @click="router.push({ path: `/user-cars` })">
+                    <q-item-section>Мои объявления</q-item-section>
+                  </q-item>
                   <q-item clickable @click="router.push({ path: `/favorites` })">
                     <q-item-section>Избранное</q-item-section>
                   </q-item>
@@ -36,7 +40,7 @@
                     <q-item-section>Сообщения</q-item-section>
                   </q-item>
                   <q-separator />
-                  <q-item clickable @click="logoutUser">
+                  <q-item clickable @click="logoutHandler">
                     <q-item-section>Выйти</q-item-section>
                   </q-item>
                 </q-list>
@@ -51,20 +55,22 @@
 
     <LoginModal v-model:showModal="showLoginModal" @openRegisterModal="showRegisterModal = true" />
 
-    <RegisterModal v-model:showModal="showRegisterModal" @openSuccessModal="showSuccessModal = true" />
+    <RegisterModal v-model:showModal="showRegisterModal" @openInfoModal="openInfoModal" />
 
-    <SuccessModal v-model:show-modal="showSuccessModal" message="Вы успешно зарегистрированы и авторизованы!" />
+    <InfoModal ref="infoModal" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import LoginModal from '@/components/modals/LoginModal.vue'
 import RegisterModal from '@/components/modals/RegisterModal.vue'
-import SuccessModal from '@/components/modals/SuccessModal.vue'
+import InfoModal from '@/components/modals/InfoModal.vue'
+import { getImgSrc } from '@/utils/commons'
+import { User } from '@/components/models'
 
 defineOptions({
   name: 'AppHeader',
@@ -72,28 +78,34 @@ defineOptions({
 
 const userStore = useUserStore()
 const { currentUser, isAuth } = storeToRefs(userStore)
-const { loginUser, logoutUser } = userStore
+const { logoutUser } = userStore
 
 const router = useRouter()
 const showLoginModal = ref(false)
 const showRegisterModal = ref(false)
-const showSuccessModal = ref(false)
+const infoModal = ref()
 
-function getFirstLetter(word: string) {
-  return word.split('')[0]
+function getFirstLetter(user: User) {
+  const data = user.name ? user.name : user.login
+  return data.split('')[0]
+}
+
+function getUserName() {
+  if (currentUser.value) return currentUser.value.name.length ? currentUser.value.name : currentUser.value.login
 }
 
 function addItemHandler() {
   isAuth.value ? router.push('/additem') : (showLoginModal.value = true)
 }
 
-onMounted(() => {
-  const user = localStorage.getItem('quasarCarsUser')
-  if (user) {
-    const parsedUser = JSON.parse(user)
-    loginUser(parsedUser.login, parsedUser.password)
-  }
-})
+function logoutHandler() {
+  logoutUser()
+  router.push('/')
+}
+
+function openInfoModal(msg: string, type: string) {
+  infoModal.value?.openModal(msg, type)
+}
 </script>
 
 <style lang="scss">
@@ -134,7 +146,7 @@ onMounted(() => {
     margin-right: 1.25rem;
     cursor: pointer;
   }
-  &-letter {
+  &-avatar {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -145,6 +157,10 @@ onMounted(() => {
     font-size: 1.15rem;
     color: #000;
     margin-right: 0.45rem;
+    overflow: hidden;
+    img {
+      width: 100%;
+    }
   }
   &-menu {
     background-color: #fff;

@@ -17,7 +17,7 @@ defineOptions({
 })
 
 type Props = {
-  modelValue: string | number | null
+  modelValue?: string | number | null
   label?: string
   placeholder?: string
   disabled?: boolean
@@ -49,7 +49,9 @@ const value = computed({
 })
 
 onMounted(() => {
-  inputVal.value = props.modelValue
+  if (props.modelValue !== undefined) {
+    inputVal.value = props.modelValue
+  }
 })
 </script>
 
