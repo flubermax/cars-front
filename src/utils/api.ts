@@ -1,14 +1,7 @@
 import axios from 'axios'
-// import { Author, CarItem, CarProp, Role } from '@/types'
-// import { ServerResult } from '@/components/models'
+import { Attributes } from '@/models'
 
 const base_url = 'http://localhost:8088/api/'
-
-type Attributes = {
-  [key: string]: unknown
-}
-
-// <T extends Attributes>(obj: T, key: keyof T)
 
 class Api {
   baseUrl

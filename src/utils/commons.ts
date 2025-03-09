@@ -1,9 +1,7 @@
-import { CarItem } from '@/types'
 import assert from 'assert'
 // const assert = require('assert')
-import { engineList } from '@/constants/engines'
-import { driveList } from '@/constants/drives'
-// import { transmissionList } from '@/constants/transmissions'
+import { CarItem } from '@/models'
+import { engineList, driveList } from '@/constants'
 
 export function getMileage(value: number): string {
   const stringMileage = String(value)
@@ -69,4 +67,12 @@ export const getImagesPath = (file: File) => {
 
 export const getImgSrc = (fileName: string) => {
   return `http://localhost:8088/${fileName}`
+}
+
+type Attributes = {
+  [key: string]: string[]
+}
+
+export function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
+  return obj[key]
 }

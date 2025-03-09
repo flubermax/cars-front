@@ -74,10 +74,10 @@
       <div class="q-mb-md">
         <span class="form-control-label">Объём двигателя, л</span>
         <div class="range-input">
-          <!-- <MyInput v-model="filter.engineСapacityFrom" mask="#.#" reverse-fill-mask placeholder="от" />
-          <MyInput v-model="filter.engineСapacityTo" mask="#.#" reverse-fill-mask placeholder="до" /> -->
-          <MySelect v-model="filter.engineСapacityFrom" :options="engineСapacityListFrom" selectedLabel="от" />
-          <MySelect v-model="filter.engineСapacityTo" :options="engineСapacityListTo" selectedLabel="до" />
+          <!-- <MyInput v-model="filter.engineCapacityFrom" mask="#.#" reverse-fill-mask placeholder="от" />
+          <MyInput v-model="filter.engineCapacityTo" mask="#.#" reverse-fill-mask placeholder="до" /> -->
+          <MySelect v-model="filter.engineCapacityFrom" :options="engineСapacityListFrom" selectedLabel="от" />
+          <MySelect v-model="filter.engineCapacityTo" :options="engineСapacityListTo" selectedLabel="до" />
         </div>
       </div>
 
@@ -109,13 +109,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
-import { Filter } from '@/types'
+import { Filter } from '@/models'
 import { MyInput, MySelect } from '@/components/UI'
-import { brands } from '@/constants/brands'
-import { engineList, engineСapacityList } from '@/constants/engines'
-import { driveList } from '@/constants/drives'
-import { transmissionList } from '@/constants/transmissions'
-import { numberWithSpaces } from '@/utils/commons'
+import { brands, transmissionList, engineList, engineСapacityList, driveList } from '@/constants'
+import { numberWithSpaces, getAttributeValue } from '@/utils/commons'
 
 defineOptions({
   name: 'SideBar',
@@ -138,14 +135,6 @@ const emit = defineEmits<{
   (e: 'resetModel'): void
 }>()
 
-type Attributes = {
-  [key: string]: string[]
-}
-
-function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
-  return obj[key]
-}
-
 // function formatPrice(e: Event, key: keyof Filter) {
 // const newVal = numberWithSpaces((e.target as HTMLInputElement).value)
 // }
@@ -157,14 +146,14 @@ function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
 const brandList: string[] = Object.keys(brands)
 let modelList = ref<string[]>([])
 const engineСapacityListFrom = computed(() => {
-  if (filter.value.engineСapacityTo) {
-    return engineСapacityList.filter((item) => item <= Number(filter.value.engineСapacityTo))
+  if (filter.value.engineCapacityTo) {
+    return engineСapacityList.filter((item) => item <= Number(filter.value.engineCapacityTo))
   }
   return engineСapacityList
 })
 const engineСapacityListTo = computed(() => {
-  if (filter.value.engineСapacityFrom) {
-    return engineСapacityList.filter((item) => item >= Number(filter.value.engineСapacityFrom))
+  if (filter.value.engineCapacityFrom) {
+    return engineСapacityList.filter((item) => item >= Number(filter.value.engineCapacityFrom))
   }
   return engineСapacityList
 })
@@ -183,8 +172,8 @@ watch(
     if (newVal.priceTo) {
       newVal.priceTo = numberWithSpaces(newVal.priceTo)
     }
-    // if (newVal.engineСapacityFrom) {
-    //   console.log(newVal.engineСapacityFrom, String(newVal.engineСapacityFrom).length)
+    // if (newVal.engineCapacityFrom) {
+    //   console.log(newVal.engineCapacityFrom, String(newVal.engineCapacityFrom).length)
     // }
   },
   { deep: true }

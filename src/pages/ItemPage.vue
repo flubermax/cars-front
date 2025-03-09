@@ -119,10 +119,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { Dialog } from 'quasar'
 import { numberWithSpaces, getImgSrc } from '@/utils/commons'
 import { computed } from 'vue'
-import { transmissionList } from '@/constants/transmissions'
-import { engineList } from '@/constants/engines'
-import { driveList } from '@/constants/drives'
-import { CarItem } from '@/types'
+import { transmissionList, engineList, driveList } from '@/constants'
+import { CarItem } from '@/models'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
 import PhoneModal from '@/components/modals/PhoneModal.vue'
@@ -161,6 +159,8 @@ const getDefaultItem = () =>
     price: null,
     descr: '',
     idf: '',
+    createDate: 0,
+    changeDate: 0,
     authorIdf: '',
     authorName: '',
     authorAvatar: '',

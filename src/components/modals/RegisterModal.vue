@@ -57,7 +57,7 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, sameAs } from '@vuelidate/validators'
 import MyInput from '@/components/UI/MyInput.vue'
 import { useUserStore } from '@/stores/user'
-import { User } from '@/components/models'
+import { User } from '@/models'
 // import { storeToRefs } from 'pinia'
 
 defineOptions({

@@ -70,7 +70,7 @@ import LoginModal from '@/components/modals/LoginModal.vue'
 import RegisterModal from '@/components/modals/RegisterModal.vue'
 import InfoModal from '@/components/modals/InfoModal.vue'
 import { getImgSrc } from '@/utils/commons'
-import { User } from '@/components/models'
+import { User } from '@/models'
 
 defineOptions({
   name: 'AppHeader',

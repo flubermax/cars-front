@@ -31,15 +31,15 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ListItem } from '@/components/models'
+import { CarOption } from '@/models'
 
 defineOptions({
   name: 'MySelect',
 })
 
 type Props = {
-  modelValue: string | number | ListItem | null
-  options: string[] | number[] | ListItem[]
+  modelValue: unknown
+  options: string[] | number[] | CarOption[]
   label?: string
   placeholder?: string
   disable?: boolean
@@ -52,7 +52,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', newVal: string | number | ListItem | null): void
+  (e: 'update:modelValue', newVal: unknown): void
 }>()
 
 const value = computed({

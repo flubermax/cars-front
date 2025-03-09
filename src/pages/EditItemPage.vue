@@ -201,18 +201,12 @@ import { ref, watch, nextTick, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import MyInput from '@/components/UI/MyInput.vue'
 import MySelect from '@/components/UI/MySelect.vue'
-import { CarItem } from '@/types'
-import { brands } from '@/constants/brands'
-import { colors } from '@/constants/colors'
-import { engineList, engineСapacityList } from '@/constants/engines'
-import { driveList } from '@/constants/drives'
-import { transmissionList } from '@/constants/transmissions'
-import { ListItem } from '@/components/models'
+import { CarItem, CarOption } from '@/models'
+import { brands, colors, transmissionList, engineList, engineСapacityList, driveList } from '@/constants'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
 import { useUserStore } from '@/stores/user'
-// import { numberWithSpaces } from '@/utils/commons'
-import { getImagesPath, getImgSrc } from '@/utils/commons'
+import { getImagesPath, getImgSrc, getAttributeValue } from '@/utils/commons'
 import InfoModal from '@/components/modals/InfoModal.vue'
 
 defineOptions({
@@ -229,15 +223,12 @@ const infoModal = ref()
 const isFormEdited = ref(false)
 
 const brandList: string[] = Object.keys(brands)
-const colorsList: ListItem[] = [...colors]
+const colorsList: CarOption[] = [...colors]
 let modelList = ref<string[]>([])
 
 const inputFileModel = ref<File[]>([])
 const imagesList = ref<File[]>([])
 
-type Attributes = {
-  [key: string]: string[]
-}
 type imgInObj = {
   [key: string]: File
 }
@@ -245,6 +236,8 @@ type imgInObj = {
 const getCarItemDefault = () =>
   <CarItem>{
     idf: '',
+    createDate: 0,
+    changeDate: 0,
     images: [],
     brand: '',
     model: '',
@@ -286,10 +279,6 @@ const rules = {
 
 const v$ = useVuelidate(rules, { item })
 
-function getAttributeValue<T extends Attributes>(obj: T, key: keyof T) {
-  return obj[key]
-}
-
 const inputFiles = ref<HTMLElement | null>(null)
 
 const inputFilesHanlder = (e: Event) => {
@@ -304,7 +293,7 @@ const removeImage = (image: string) => {
   item.value.images = item.value.images.filter((el) => el !== image)
 }
 
-const setModelList = (val: string | number | ListItem | null) => {
+const setModelList = (val: unknown) => {
   item.value.model = ''
   if (val && typeof val === 'string') {
     modelList.value = getAttributeValue(brands, val)
@@ -348,6 +337,7 @@ const getItemDto = () => {
     authorAvatar: currentUser.value ? currentUser.value.avatar : '',
     authorPhone: currentUser.value ? currentUser.value.phone : 'No phone',
     authorLocation: currentUser.value ? currentUser.value.location : 'No location',
+    changeDate: Date.now(),
     ...imagesFiles,
   }
 }

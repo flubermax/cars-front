@@ -13,15 +13,21 @@
         <div v-if="isLoading">Идёт загрузка...</div>
         <div v-else>
           <div class="searchResult-empty" v-if="isDataFiltered && !items.length">По вашему запросу нет результатов</div>
-          <MainPageItem
-            v-for="(item, itemIndex) in items"
-            :key="item.idf"
-            :item="item"
-            :itemIndex="itemIndex"
-            :itemSlideValue="itemSlideValue"
-            :mainMode="true"
-            @click="router.push({ path: `/auto/${item.idf}` })"
-          />
+          <div v-else>
+            <Sort :sortBy="sortBy" @update-sort="updateSort" />
+            <MainPageItem
+              v-for="(item, itemIndex) in items"
+              :key="item.idf"
+              :item="item"
+              :itemIndex="itemIndex"
+              :itemSlideValue="itemSlideValue"
+              :mainMode="true"
+              @click="router.push({ path: `/auto/${item.idf}` })"
+            />
+            <div v-show="totalPagesCount > 1" class="q-pa-lg flex flex-center">
+              <q-pagination v-model="currentPage" color="black" :max="totalPagesCount" :max-pages="3" boundary-numbers />
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -30,12 +36,12 @@
 
 <script setup lang="ts">
 import Api from '@/utils/api'
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { CarItem, Filter, SlideAttributes } from '@/models'
 import SideBar from '@/components/Sidebar.vue'
-import MainPageItem from '@/components/MainPageItem.vue'
-import { CarItem, Filter } from '@/types'
-import { SlideAttributes } from '@/components/models'
+import MainPageItem from '@/components/CarItemFull.vue'
+import Sort from '@/components/Sort.vue'
 
 defineOptions({
   name: 'MainPage',
@@ -49,6 +55,10 @@ const items = ref<CarItem[]>([])
 const isFilterChanged = computed(() => Object.keys(filter.value).some((key) => filter.value[key as keyof Filter]))
 const isDataFiltered = ref(false)
 const isLoading = ref(false)
+const sortBy = ref('default')
+const totalPagesCount = ref(1)
+const currentPage = ref(1)
+const currentLimit = ref(10)
 
 // interface MyObject<T> {
 //   [index: string]: T
@@ -63,8 +73,8 @@ function getDefaultFilter(): Filter {
     transmission: null,
     drive: null,
     engineType: null,
-    engineСapacityFrom: null,
-    engineСapacityTo: null,
+    engineCapacityFrom: null,
+    engineCapacityTo: null,
     priceFrom: null,
     priceTo: null,
     mileageFrom: null,
@@ -83,10 +93,11 @@ function getFilterDto(): Attributes {
 async function fetchCars() {
   try {
     isLoading.value = true
-    const resp = await Api.post('car/', getFilterDto())
+    const resp = await Api.post('car/', { filter: getFilterDto(), sortBy: sortBy.value, page: currentPage.value, limit: currentLimit.value })
     console.log(resp)
     if (resp.success) {
-      items.value = [...resp.data]
+      items.value = [...resp.data.cars]
+      totalPagesCount.value = resp.data.pagesCount
       isDataFiltered.value = isFilterChanged.value
     }
   } catch (error) {
@@ -94,6 +105,11 @@ async function fetchCars() {
   } finally {
     isLoading.value = false
   }
+}
+
+function updateSort(newVal: string) {
+  sortBy.value = newVal
+  fetchCars()
 }
 
 // for obj[key] : solution 1 - when the type of the object is known
@@ -122,6 +138,10 @@ onMounted(async () => {
       itemSlideValue.value[i] = 1
     }
   })
+})
+
+watch(currentPage, () => {
+  fetchCars()
 })
 
 // function imagePath(img) {

@@ -1,8 +1,8 @@
-import { CarItem } from '@/types'
+import { CarItem } from '@/models'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 // import { useCarsStore } from '@/stores/cars'
-import { User } from '@/components/models'
+import { User } from '@/models'
 import Api from '@/utils/api'
 
 export const useUserStore = defineStore('userStore', () => {

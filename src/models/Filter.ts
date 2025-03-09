@@ -1,4 +1,4 @@
-// import { ListItem } from '@/components/models'
+// import { CarOption } from '@/components/models'
 
 export interface Filter {
   brand: string | null
@@ -8,8 +8,8 @@ export interface Filter {
   transmission: string | null
   drive: string | null
   engineType: string | null
-  engineСapacityFrom: number | null
-  engineСapacityTo: number | null
+  engineCapacityFrom: number | null
+  engineCapacityTo: number | null
   priceFrom: string | null
   priceTo: string | null
   mileageFrom: number | null

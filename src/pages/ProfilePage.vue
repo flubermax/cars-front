@@ -165,14 +165,14 @@
 import Api from '@/utils/api'
 import { ref, onMounted, watch, computed, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import MyInput from '@/components/UI/MyInput.vue'
 import { useUserStore } from '@/stores/user'
 import { storeToRefs } from 'pinia'
-import { User } from '@/components/models'
-import InfoModal from '@/components/modals/InfoModal.vue'
+import { User } from '@/models'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minLength, sameAs } from '@vuelidate/validators'
 import { getImagesPath, getImgSrc, capitalizeFirstLetter } from '@/utils/commons'
+import InfoModal from '@/components/modals/InfoModal.vue'
+import MyInput from '@/components/UI/MyInput.vue'
 
 defineOptions({
   name: 'ProfilePage',

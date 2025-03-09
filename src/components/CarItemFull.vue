@@ -36,7 +36,7 @@
           <q-icon v-else name="favorite_border" />
         </div>
         <div v-if="isAuth && !mainMode" class="action-menuBtn" @click.stop>
-          <q-btn color="primary" label="...">
+          <q-btn color="white" text-color="black" label="...">
             <q-menu transition-show="jump-down" transition-hide="jump-up">
               <q-list style="min-width: 100px">
                 <q-item clickable @click="router.push({ path: `/edititem/${item.idf}` })">
@@ -67,12 +67,11 @@
 import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { getItemInfo, getItemName, numberWithSpaces, getImgSrc } from '@/utils/commons'
-import { CarItem } from '@/types'
 import { useUserStore } from '@/stores/user'
-import { SlideAttributes } from '@/components/models'
+import { SlideAttributes, CarItem } from '@/models'
 
 defineOptions({
-  name: 'MainPageItem',
+  name: 'CarItemFull',
 })
 
 type Emits = {

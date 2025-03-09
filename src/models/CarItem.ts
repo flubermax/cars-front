@@ -1,5 +1,5 @@
 // import { Author } from './Author'
-// import { CarProp } from './CarProp'
+// import { CarOption } from './CarOption'
 
 export interface CarItem {
   images: string[]
@@ -17,6 +17,8 @@ export interface CarItem {
   price: number | null
   descr: string
   idf: string
+  createDate: number
+  changeDate: number
   authorIdf: string
   authorName: string
   authorAvatar: string
